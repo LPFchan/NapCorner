@@ -7,11 +7,10 @@ Update it when the project's real state changes.
 
 - Last updated: 2026-10-02
 - Overall posture: `active`
-- Current focus: first public release, v0.1.0 (DMG, Sparkle updates,
-  napcorner.lost.plus, 29 UI languages)
+- Current focus: v0.1.0 is out (public repo, DMG, Sparkle feed,
+  napcorner.lost.plus, 29 UI languages); next is feedback from real use
 - Highest-priority blocker: none
-- Next operator decision needed: go-ahead to make the repo public and tag
-  v0.1.0
+- Next operator decision needed: none
 - Related decisions: none yet
 
 ## Current State Summary
@@ -19,5 +18,5 @@ Update it when the project's real state changes.
 The app works end to end on the operator's Mac: hold or push to sleep, the
 pill indicator, the haptic tap, and re-sleeping when the mouse wakes the
 display during the guard window. Onboarding, settings, launch at login and
-Sparkle are in place. Debug builds have a Spring Tuner window for adjusting
+Sparkle are in place, and v0.1.0 shipped on 2026-10-02. Debug builds have a Spring Tuner window for adjusting
 the indicator's springs live.
