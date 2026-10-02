@@ -69,9 +69,9 @@ func render(_ px: Int) -> Data {
     let bg = CGGradient(colorsSpace: nil, colors: [color(accent), color(dark), color(deep)] as CFArray,
                         locations: [0, 0.5, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 924, y: 924), end: CGPoint(x: 100, y: 100), options: [])
-    let glow = CGGradient(colorsSpace: nil, colors: [color(light, 0.75), color(light, 0)] as CFArray, locations: [0, 1])!
+    let glow = CGGradient(colorsSpace: nil, colors: [color(light, 0.75), color(light, 0.3), color(light, 0)] as CFArray, locations: [0, 0.45, 1])!
     ctx.drawRadialGradient(glow, startCenter: CGPoint(x: 924, y: 924), startRadius: 0,
-                           endCenter: CGPoint(x: 924, y: 924), endRadius: 520, options: [])
+                           endCenter: CGPoint(x: 924, y: 924), endRadius: 900, options: [])
 
     // The pointer's trail, along its way up to the corner.
     ctx.setLineCap(.round)
