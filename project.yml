@@ -1,0 +1,66 @@
+name: NapCorner
+options:
+  bundleIdPrefix: com.lpfchan
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.0
+
+settings:
+  base:
+    PRODUCT_NAME: NapCorner
+    # Release builds override both from the tag and commit count
+    # (scripts/build-app.sh).
+    MARKETING_VERSION: "0.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    SWIFT_EMIT_LOC_STRINGS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+
+targets:
+  NapCorner:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Nap
+      - path: Settings
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lpfchan.NapCorner
+        INFOPLIST_FILE: Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: Info.plist
+      properties:
+        CFBundleName: NapCorner
+        CFBundleDisplayName: NapCorner
+        CFBundleIdentifier: com.lpfchan.NapCorner
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleDevelopmentRegion: en
+        # English is the source language and has no .lproj of its own, so
+        # list every language or macOS won't count English as supported.
+        CFBundleLocalizations: [en, ar, bg, cs, da, de, es, et, fi, fr, hi, hr, hu, it, ja, ko, nb, nl, pl, pt-BR, pt-PT, ro, ru, sk, sv, tr, uk, vi, zh-Hans]
+        LSApplicationCategoryType: public.app-category.utilities
+        SUFeedURL: https://napcorner.lost.plus/appcast.xml
+        SUPublicEDKey: Q8UXungRVYRCrYtBS8V2P92hx0rYSjp/aBM4MYboHp4=
+        SUEnableAutomaticChecks: true
+        CFBundleIconName: AppIcon
+        LSUIElement: true
+        NSHighResolutionCapable: true
+        NSHumanReadableCopyright: "© 2026 LPFchan. MIT License."
+        NSPrincipalClass: NSApplication
+        NSSupportsAutomaticTermination: false
+        NSSupportsSuddenTermination: false
+    dependencies:
+      - package: Sparkle

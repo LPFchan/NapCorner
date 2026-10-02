@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- The DMG window background (600×600, rendered at 2×), in the icon's
+     colors. DMGMaker draws the glass panel, arrow and "To install NapCorner"
+     text on top, roughly the middle band (y 170–470), so decoration stays out
+     of it. Render: scripts/make-dmg-background.sh -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 600px; height: 600px; overflow: hidden; }
+  body {
+    position: relative;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(229, 163, 232, 0.6), transparent 55%),
+      linear-gradient(225deg, #8c3f91 0%, #581e5c 50%, #341136 100%);
+  }
+  /* A soft zzZ drifting into the top-right corner, as on the icon. */
+  svg { position: absolute; top: 34px; right: 44px; }
+</style>
+</head>
+<body>
+  <svg width="120" height="90" viewBox="0 0 120 90" fill="none" stroke="rgba(255,255,255,0.18)" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="3" d="M4 66 H18 L4 80 H18"/>
+    <path stroke-width="3.5" d="M32 46 H52 L32 66 H52"/>
+    <path stroke-width="4.5" d="M70 10 H100 L70 40 H100"/>
+  </svg>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# NapCorner
+
+> A macOS menu bar app that replaces the "Put Display to Sleep" hot corner with one that asks for intent. The built-in hot corner sleeps the display the moment the pointer brushes the corner, and wakes it on the next twitch of the mouse. With NapCorner you rest the pointer in the corner (1.5 seconds by default) or push the mouse into it, and for a moment after the screen goes dark, mouse bumps don't wake it. Free and open source (MIT), for macOS 15 or later, Apple silicon and Intel.
+
+- Download: https://github.com/LPFchan/NapCorner/releases/latest/download/NapCorner.dmg
+- Source, README and build instructions: https://github.com/LPFchan/NapCorner
+- Release notes: https://github.com/LPFchan/NapCorner/releases
+- Agent skill for installing and setting it up: https://napcorner.lost.plus/.well-known/agent-skills/install-napcorner/SKILL.md
+
+## Using it
+
+- Move the pointer into a chosen screen corner (top right by default; any of the four, several at once). A small black pill springs out of the corner and types "Sleeping … zzzZ" while its white outline fills.
+- Rest there for the hold time (0.5–5 s, default 1.5 s), or push the mouse further into the corner to fill it faster. Flicking through the corner doesn't count, and leaving the corner cancels.
+- When it fills, the trackpad taps once, the screen goes dark from the corner, and the display sleeps.
+- For a short while after (0–3 s, default 1 s), moving the mouse doesn't wake the display; if it wakes, NapCorner puts it back to sleep. A key press or a click always wakes it.
+- If macOS's own hot corner is set to Put Display to Sleep on the same corner, NapCorner offers to turn it off so they don't both fire.
+- The menu bar icon (zzZ) has Enabled, Settings, Open at Login, Check for Updates and About. Updates install through Sparkle.
+
+## First launch
+
+NapCorner isn't notarized by Apple, so the first launch needs System Settings → Privacy & Security → Open Anyway. It asks for no permissions. A short welcome lets you pick corners and whether to open it at login.
+
+## How it works
+
+- Global mouse-moved monitors watch the pointer; no Accessibility access is needed.
+- The display sleeps through `pmset displaysleepnow`.
+- The trackpad tap uses the trackpad's haptic actuator directly, since the public haptics API only plays for the frontmost app.
+- No analytics or telemetry. The only network request is the update check against napcorner.lost.plus.

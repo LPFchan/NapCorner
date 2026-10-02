@@ -1,0 +1,441 @@
+<!doctype html>
+<!-- NapCorner's homepage. GitHub Pages serves this folder at
+     napcorner.lost.plus, which also hosts the Sparkle update feed
+     (appcast.xml). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NapCorner: a sleep hot corner that waits for you</title>
+<meta name="description" content="A menu bar app that makes the Put Display to Sleep hot corner deliberate: rest or push into the corner to sleep, and mouse bumps right after won't wake the screen.">
+<link rel="canonical" href="https://napcorner.lost.plus/">
+<link rel="alternate" type="text/markdown" href="https://napcorner.lost.plus/llms.txt" title="NapCorner, for language models">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NapCorner">
+<meta property="og:title" content="NapCorner">
+<meta property="og:description" content="A sleep hot corner that waits for you.">
+<meta property="og:image" content="https://napcorner.lost.plus/icon.png">
+<meta property="og:url" content="https://napcorner.lost.plus/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#161616">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "NapCorner",
+  "description": "A macOS menu bar app that replaces the Put Display to Sleep hot corner with one that waits for a deliberate rest or push, and ignores mouse bumps right after the display sleeps.",
+  "url": "https://napcorner.lost.plus/",
+  "downloadUrl": "https://github.com/LPFchan/NapCorner/releases/latest/download/NapCorner.dmg",
+  "image": "https://napcorner.lost.plus/icon.png",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "macOS 15 or later",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "license": "https://opensource.org/licenses/MIT",
+  "codeRepository": "https://github.com/LPFchan/NapCorner",
+  "author": { "@type": "Person", "name": "LPFchan", "url": "https://github.com/LPFchan" }
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    color-scheme: dark;
+    /* Neutral greys, and the app's purple (hue 325) as the one accent:
+       white on it passes WCAG AA (6.2:1). */
+    --bg: #161616;
+    --raised: #242424;
+    --text: #fff;
+    --text-muted: rgb(255 255 255 / 72%);
+    --hair: rgb(255 255 255 / 14%);
+    --accent: #8c3f91;
+    --accent-hover: #9c4aa1;
+    --sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", "Apple SD Gothic Neo", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    color: var(--text);
+    background: var(--bg);
+    font: 16px/1.6 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  main, footer { width: min(912px, 100% - 48px); margin: 0 auto; }
+  a { color: inherit; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  .hero { padding: 72px 0 40px; text-align: center; }
+  .hero img { display: block; width: 112px; height: 112px; margin: 0 auto 12px; }
+  h1 { margin: 0; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .tagline { max-width: 560px; margin: 16px auto 28px; color: var(--text-muted); font-size: 19px; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 22px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    color: #fff;
+    background: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 120ms;
+  }
+  .button:hover { background: var(--accent-hover); }
+  .button.outline { border-color: var(--hair); background: transparent; }
+  .button.outline:hover { background: rgb(255 255 255 / 8%); }
+  .button svg { width: 18px; height: 18px; fill: currentColor; }
+  .meta { margin: 14px 0 0; color: var(--text-muted); font-size: 14px; }
+
+  /* The demo: a little screen whose top-right corner does what the app
+     does. Sizes are in --u so the whole thing scales with its width. */
+  .demo { margin: 0 auto; max-width: 640px; container-type: inline-size; }
+  .screen {
+    --u: calc(100cqw / 640);
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--hair);
+    border-radius: 12px;
+    background: #4a4a4a;
+  }
+  .window {
+    position: absolute;
+    border-radius: calc(10 * var(--u));
+    background: #6a6a6a;
+  }
+  .window.front { background: #8a8a8a; }
+  .pointer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(16 * var(--u));
+    height: calc(24 * var(--u));
+    transform: translate(var(--x), var(--y));
+    transition: transform 900ms cubic-bezier(0.3, 1.1, 0.4, 1);
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%));
+  }
+  .pill {
+    --h: calc(30 * var(--u));
+    position: absolute;
+    top: calc(8 * var(--u));
+    right: calc(8 * var(--u));
+    height: var(--h);
+    width: var(--w, var(--h));
+    border-radius: 999px;
+    background: #000;
+    box-shadow: 0 calc(3 * var(--u)) calc(10 * var(--u)) rgb(0 0 0 / 35%);
+    transform-origin: 100% 0;
+    transform: scale(0);
+    transition:
+      transform 420ms cubic-bezier(0.34, 1.7, 0.6, 1),
+      width 700ms cubic-bezier(0.3, 1.25, 0.5, 1);
+  }
+  .pill.shown { transform: scale(calc(1 + var(--swell, 0))); }
+  .pill svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .pill rect { fill: none; stroke-width: calc(2.4 * var(--u)); }
+  .pill .track { stroke: rgb(255 255 255 / 16%); }
+  .pill .fill {
+    stroke: #fff;
+    stroke-linecap: round;
+    stroke-dasharray: var(--p, 0) 100;
+    transition: stroke-dasharray 300ms ease-out;
+  }
+  .text {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 calc(14 * var(--u)) calc(8 * var(--u));
+    border-radius: 999px;
+    color: #fff;
+    font-size: calc(13 * var(--u));
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .text span {
+    display: inline-block;
+    transform-origin: 50% 100%;
+    animation: bob 1.85s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.12s);
+    transition: font-size 340ms cubic-bezier(0.34, 1.5, 0.6, 1);
+  }
+  .text span.new { animation-name: pop, bob; animation-duration: 340ms, 1.85s; animation-iteration-count: 1, infinite; animation-timing-function: cubic-bezier(0.34, 1.7, 0.6, 1), ease-in-out; }
+  .text .dot { font-weight: 800; }
+  .text .dot.first { margin-left: 0.3em; }
+  .text .z { font-weight: 900; margin-left: 0.04em; }
+  .text .z.first { margin-left: 0.45em; }
+  @keyframes bob { 0%, 100% { translate: 0 calc(-1 * var(--u)); } 50% { translate: 0 calc(1 * var(--u)); } }
+  @keyframes pop { from { transform: translateX(calc(16 * var(--u))) scale(0); } }
+  .curtain {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 260%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #000;
+    transform: translate(50%, -50%) scale(0);
+    pointer-events: none;
+  }
+  .curtain.closed { transform: translate(50%, -50%) scale(1); transition: transform 460ms cubic-bezier(0.5, 0, 0.75, 0); }
+  .hint {
+    position: absolute;
+    left: 50%;
+    top: 56%;
+    display: grid;
+    place-items: center;
+    min-width: calc(40 * var(--u));
+    height: calc(36 * var(--u));
+    padding: 0 calc(10 * var(--u));
+    border-radius: calc(7 * var(--u));
+    color: rgb(255 255 255 / 85%);
+    font-size: calc(17 * var(--u));
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 200ms, transform 160ms, background-color 160ms;
+  }
+  .hint.on { opacity: 1; }
+  .hint.key { background: rgb(255 255 255 / 14%); }
+  .hint.key.down { background: rgb(255 255 255 / 30%); transform: translate(-50%, -50%) scale(0.9); }
+  .hint.mouse svg { width: calc(22 * var(--u)); height: calc(34 * var(--u)); }
+  .hint.mouse.wiggle svg { animation: wiggle 180ms ease-in-out 6 alternate; }
+  @keyframes wiggle { from { rotate: -9deg; } to { rotate: 9deg; } }
+  .caption { min-height: 1.6em; margin: 12px 0 0; color: var(--text-muted); font-size: 15px; text-align: center; }
+
+  h2 { margin: 64px 0 8px; font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .features li { padding: 16px 0; border-top: 1px solid var(--hair); }
+  .features h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .features p, .steps { margin: 0; color: var(--text-muted); font-size: 15px; }
+  .steps { padding-left: 1.3em; max-width: 680px; }
+  .steps li { padding: 4px 0; }
+  code { font-family: var(--mono); font-size: 0.9em; }
+
+  footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 72px;
+    padding: 20px 0 40px;
+    border-top: 1px solid var(--hair);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  footer .credits { flex-basis: 100%; margin: 0; }
+
+  @media (max-width: 760px) {
+    .hero { padding-top: 48px; }
+    h1 { font-size: 36px; }
+    .tagline { font-size: 17px; }
+    .features { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.001ms !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <img src="icon.png" alt="" width="112" height="112">
+    <h1>NapCorner</h1>
+    <p class="tagline">The Put Display to Sleep hot corner, except it waits until you mean it, and doesn't wake up the moment you bump the mouse.</p>
+    <div class="actions">
+      <a class="button" href="https://github.com/LPFchan/NapCorner/releases/latest/download/NapCorner.dmg">Download for Mac</a>
+      <a class="button outline" href="https://github.com/LPFchan/NapCorner">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <p class="meta">Free and open source · macOS 15 or later</p>
+  </section>
+
+  <figure class="demo">
+    <div class="screen" role="img" aria-label="The pointer rests in the top-right corner while a black pill types Sleeping … zzzZ and its outline fills, then the screen goes dark. Bumping the mouse leaves it dark; pressing a key wakes it.">
+      <div class="window" style="left: 12%; top: 16%; width: 44%; height: 42%"></div>
+      <div class="window front" style="left: 36%; top: 44%; width: 38%; height: 38%"></div>
+      <svg class="pointer" viewBox="0 0 16 24" aria-hidden="true">
+        <path d="M2 2V19L6.5 15 9.5 21.5 12 20.4 9 14H14.5Z" fill="#000" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <div class="pill">
+        <svg aria-hidden="true"><rect class="track" pathLength="100"/><rect class="fill" pathLength="100"/></svg>
+        <div class="text"></div>
+      </div>
+      <div class="curtain"></div>
+      <div class="hint mouse" aria-hidden="true">
+        <svg viewBox="0 0 22 34" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="20" height="32" rx="10"/><path d="M11 5v8"/></svg>
+      </div>
+      <div class="hint key" aria-hidden="true">⌃</div>
+    </div>
+    <figcaption class="caption" aria-live="off">Rest the pointer in the corner, or push into it.</figcaption>
+  </figure>
+
+  <h2>What it does</h2>
+  <ul class="features">
+    <li>
+      <h3>Waits until you mean it</h3>
+      <p>Rest the pointer in the corner for a moment, or push the mouse into it. Flicking past the corner on the way to a menu doesn't count.</p>
+    </li>
+    <li>
+      <h3>Stays asleep</h3>
+      <p>For a moment after the screen goes dark, bumping the mouse won't wake it. A key press or a click always does.</p>
+    </li>
+    <li>
+      <h3>Shows you where it's at</h3>
+      <p>A little pill springs out of the corner and types “Sleeping … zzzZ” as it fills. The trackpad taps once when it commits.</p>
+    </li>
+    <li>
+      <h3>Your corners, your timing</h3>
+      <p>Pick any corners, how long to hold, how firm a push, and how long to ignore the mouse.</p>
+    </li>
+    <li>
+      <h3>No permissions</h3>
+      <p>No Accessibility or other access to grant. It offers to turn off macOS's own hot corner so the two don't both fire.</p>
+    </li>
+    <li>
+      <h3>Private</h3>
+      <p>No analytics. The only thing it fetches is its own update check.</p>
+    </li>
+  </ul>
+
+  <h2>First launch</h2>
+  <ol class="steps">
+    <li>Open <code>NapCorner.dmg</code> and drag NapCorner into Applications.</li>
+    <li>NapCorner isn't notarized by Apple, so macOS blocks the first launch. Go to System Settings → Privacy &amp; Security and click <strong>Open Anyway</strong>.</li>
+    <li>A short welcome asks which corners to use and whether to open NapCorner at login.</li>
+  </ol>
+</main>
+
+<footer>
+  <a href="https://github.com/LPFchan/NapCorner">GitHub</a>
+  <a href="https://github.com/LPFchan/NapCorner/releases">Releases</a>
+  <a href="https://github.com/LPFchan/NapCorner/blob/main/LICENSE">MIT License</a>
+  <p class="credits">Updates by <a href="https://sparkle-project.org">Sparkle</a>.</p>
+</footer>
+<script>
+// Loops the demo: the pointer glides into the corner, the pill types itself
+// out, the screen goes dark, a mouse bump doesn't wake it, a key press does.
+(() => {
+  const screen = document.querySelector(".screen");
+  const pointer = screen.querySelector(".pointer");
+  const pill = screen.querySelector(".pill");
+  const text = pill.querySelector(".text");
+  const rects = pill.querySelectorAll("rect");
+  const curtain = screen.querySelector(".curtain");
+  const mouse = screen.querySelector(".hint.mouse");
+  const key = screen.querySelector(".hint.key");
+  const caption = document.querySelector(".caption");
+  const pieces = [
+    ...[..."Sleeping"].map((c) => ({ c, stage: 0 })),
+    { c: ".", stage: 1, cls: "dot first" }, { c: ".", stage: 2, cls: "dot" }, { c: ".", stage: 3, cls: "dot" },
+    ...[4, 5, 6, 7].map((stage) => ({ c: "Z", stage, cls: stage === 4 ? "z first" : "z" })),
+  ];
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const u = () => screen.clientWidth / 640;
+
+  // The outline: a capsule the size of the pill, redrawn as the pill grows.
+  const sizeRects = () => {
+    const w = pill.offsetWidth, h = pill.offsetHeight;
+    for (const r of rects) {
+      r.setAttribute("width", w); r.setAttribute("height", h);
+      r.setAttribute("rx", h / 2);
+    }
+  };
+  new ResizeObserver(sizeRects).observe(pill);
+
+  // Shows everything up to `stage`; the z's ramp evenly up to the newest.
+  const render = (stage) => {
+    const zs = pieces.filter((p) => p.cls?.startsWith("z") && p.stage <= stage);
+    text.replaceChildren(...pieces.filter((p) => p.stage <= stage).map((p, i) => {
+      const s = document.createElement("span");
+      s.textContent = p.c;
+      s.className = (p.cls ?? "") + (p.stage === stage && stage > 0 ? " new" : "");
+      s.style.setProperty("--i", i);
+      const zi = zs.indexOf(p);
+      if (zi >= 0) s.style.fontSize = `${(zs.length > 1 ? 0.5 + 0.5 * zi / (zs.length - 1) : 1) * 15 * u()}px`;
+      if (p.cls?.startsWith("dot")) s.style.fontSize = `${13 * u()}px`;
+      return s;
+    }));
+    // Measure at full size, then let the pill's width spring there.
+    const probe = text.cloneNode(true);
+    Object.assign(probe.style, { position: "absolute", visibility: "hidden", inset: "auto", width: "max-content" });
+    probe.querySelectorAll("span").forEach((s) => s.classList.remove("new"));
+    pill.append(probe);
+    pill.style.setProperty("--w", `${probe.scrollWidth}px`);
+    probe.remove();
+  };
+
+  const place = (x, y) => {
+    pointer.style.setProperty("--x", `${x * screen.clientWidth}px`);
+    pointer.style.setProperty("--y", `${y * screen.clientHeight}px`);
+  };
+
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    place(0.985, 0); render(7); pill.classList.add("shown");
+    pill.style.setProperty("--p", 100);
+    return;
+  }
+
+  (async () => {
+    place(0.32, 0.62);
+    for (;;) {
+      caption.textContent = "Rest the pointer in the corner, or push into it.";
+      await wait(700);
+      place(0.985, 0);
+      await wait(800);
+      render(0);
+      pill.classList.add("shown");
+      for (let stage = 0; stage < 8; stage++) {
+        if (stage) render(stage);
+        pill.style.setProperty("--p", ((stage + 1) / 8) * 100);
+        pill.style.setProperty("--swell", ((stage + 1) / 8) * 0.25);
+        await wait(300);
+      }
+      pill.style.setProperty("--swell", 0.4);
+      await wait(250);
+      curtain.classList.add("closed");
+      await wait(700);
+      caption.textContent = "Bumping the mouse leaves it dark.";
+      mouse.classList.add("on", "wiggle");
+      await wait(1300);
+      mouse.classList.remove("on", "wiggle");
+      caption.textContent = "A key press wakes it.";
+      await wait(300);
+      key.classList.add("on");
+      await wait(500);
+      key.classList.add("down");
+      await wait(160);
+      // Waking has no animation: the curtain and the pill just go.
+      key.classList.remove("on", "down");
+      for (const el of [curtain, pill]) el.style.transition = "none";
+      curtain.classList.remove("closed");
+      pill.classList.remove("shown");
+      pill.style.setProperty("--p", 0);
+      pill.style.setProperty("--swell", 0);
+      pill.style.removeProperty("--w");
+      text.replaceChildren();
+      place(0.32, 0.62);
+      await wait(50);
+      for (const el of [curtain, pill]) el.style.transition = "";
+      await wait(1400);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "install-napcorner",
+      "type": "skill-md",
+      "description": "Install NapCorner on a Mac and get it working. Use when a user wants a \"Put Display to Sleep\" hot corner that doesn't fire by accident or wake right back up, or asks to install or set up NapCorner.",
+      "url": "/.well-known/agent-skills/install-napcorner/SKILL.md",
+      "digest": "sha256:81f870d4dd04844f1960592fe4ecc76f01636936db373b50971341575730d243"
+    }
+  ]
+}
