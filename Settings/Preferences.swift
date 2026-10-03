@@ -6,7 +6,9 @@ enum Preferences {
 
     static let holdRange = 0.5...5.0
     static let pushRange = 150.0...1200.0
-    static let guardRange = 0.0...5.0
+    /// The final slider step means no time limit; keep persisted values finite.
+    static let infiniteGuardSeconds = 5.25
+    static let guardRange = 0.0...infiniteGuardSeconds
 
     static var enabled: Bool {
         get { defaults.object(forKey: "enabled") as? Bool ?? true }
@@ -38,7 +40,7 @@ enum Preferences {
         set { defaults.set(newValue, forKey: "pushDistance") }
     }
 
-    /// Seconds after the displays sleep during which the mouse can't wake them.
+    /// Seconds to ignore the mouse, or infiniteGuardSeconds for no time limit.
     static var guardSeconds: Double {
         get { defaults.object(forKey: "guardSeconds") as? Double ?? 3.0 }
         set { defaults.set(newValue, forKey: "guardSeconds") }

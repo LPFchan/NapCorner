@@ -95,7 +95,9 @@ private struct SettingsView: View {
                     Slider(value: $model.guardSeconds, in: Preferences.guardRange, step: 0.25)
                 } label: {
                     Text("Ignore the mouse for")
-                    Text(model.guardSeconds == 0 ? String(localized: "Off") : seconds(model.guardSeconds))
+                    Text(model.guardSeconds == Preferences.infiniteGuardSeconds
+                         ? String(localized: "Infinite")
+                         : model.guardSeconds == 0 ? String(localized: "Off") : seconds(model.guardSeconds))
                 }
             } header: {
                 Text("Staying asleep")
