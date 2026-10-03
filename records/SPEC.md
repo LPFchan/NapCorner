@@ -7,7 +7,7 @@ Keep it durable. Do not use it as a changelog, inbox, or weekly narrative.
 - Canonical repo: LPFchan/NapCorner
 - Project id: napcorner
 - Operator: yeowool
-- Last updated: 2026-10-02
+- Last updated: 2026-10-04
 - Related decisions: none yet
 
 ## Project thesis
@@ -30,11 +30,12 @@ the mouse for a moment afterwards.
   pushed. All motion is hand-stepped springs (`Nap/Spring.swift`).
 - On commit: one trackpad haptic tap, a black curtain closes from the corner,
   then `pmset displaysleepnow`.
-- After sleep: during the guard window (0–5 s, default 3 s, counted from the
+- After sleep: during the guard window (0–5 s or Infinite, default 3 s, counted from the
   displays going dark), a display woken by the mouse is put straight back to
   sleep behind the curtain, including a wake still showing when the window
   ends. A key press or click ends the guard and wakes normally, with no
-  animation.
+  animation. Infinite is the rightmost slider step and keeps the guard active
+  until a key press or click.
 - Offers to turn off the macOS hot corner on the same corner.
 
 ## Invariants

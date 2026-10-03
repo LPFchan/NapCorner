@@ -1,7 +1,7 @@
 import AppKit
 import CoreGraphics
 
-/// Puts the displays to sleep, then keeps them asleep for a short guard
+/// Puts the displays to sleep, then keeps them asleep for a timed or infinite guard
 /// window: a mouse nudge that wakes them in that window is undone straight
 /// away. A key press or a click counts as meaning it and ends the guard.
 ///
@@ -16,8 +16,10 @@ final class DisplaySleeper {
 
     private var curtains: [CurtainWindow] = []
     private var timer: Timer?
+    private var wakeObserver: NSObjectProtocol?
     private var startedAt = Date()
-    private var deadline = Date()
+    /// nil means the guard lasts until a key press or click.
+    private var deadline: Date?
     private var lastSleepCall = Date.distantPast
     private var wasAsleep = false
     /// The displays went dark since the last sleep call, so waking now is a
@@ -46,13 +48,30 @@ final class DisplaySleeper {
         }
         pending.notify(queue: .main) { [weak self] in
             guard let self, self.isBusy else { return }
-            self.sleepNow()
             // The guard counts from the displays going dark; this is the
             // fallback for when a wiggle cancels the sleep and they never do.
-            self.deadline = Date().addingTimeInterval(self.sleepTransition + guardSeconds)
-            self.timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.watch() }
-            }
+            self.deadline = guardSeconds == Preferences.infiniteGuardSeconds
+                ? nil : Date().addingTimeInterval(self.sleepTransition + guardSeconds)
+            if self.deadline == nil { self.observeDisplayWake() }
+            self.sleepNow()
+            self.startWatching()
+        }
+    }
+
+    /// Infinite guards wait on workspace notifications while the displays are
+    /// dark, and only poll during a sleep/wake transition.
+    private func observeDisplayWake() {
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.startWatching() }
+        }
+    }
+
+    private func startWatching() {
+        guard isBusy, timer == nil else { return }
+        timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.watch() }
         }
     }
 
@@ -91,7 +110,8 @@ final class DisplaySleeper {
             sleptSinceCall = true
             if !wasAsleep {
                 wasAsleep = true
-                deadline = now.addingTimeInterval(guardSeconds)
+                deadline = guardSeconds == Preferences.infiniteGuardSeconds
+                    ? nil : now.addingTimeInterval(guardSeconds)
                 Log.write("[Sleeper] displays asleep after \(String(format: "%.2f", now.timeIntervalSince(startedAt)))s")
             }
         }
@@ -102,12 +122,17 @@ final class DisplaySleeper {
         }
         // Past the guard, finish once the displays are dark or the mouse moves
         // again; a wake from inside the guard is put back to sleep first.
-        if now >= deadline {
+        if let deadline, now >= deadline {
             if !wasAsleep { Log.write("[Sleeper] displays never slept") }
             if asleep || !wasAsleep || movedSince(deadline) || now >= deadline.addingTimeInterval(overtime) {
                 finish()
                 return
             }
+        }
+        if asleep && deadline == nil {
+            timer?.invalidate()
+            timer = nil
+            return
         }
         if !asleep && (sleptSinceCall || now.timeIntervalSince(lastSleepCall) > sleepTransition) {
             resleeps += 1
@@ -122,6 +147,10 @@ final class DisplaySleeper {
         Log.write("[Sleeper] done, displays \(displaysAsleep ? "asleep" : "awake")")
         timer?.invalidate()
         timer = nil
+        if let wakeObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver)
+            self.wakeObserver = nil
+        }
         curtains.forEach { $0.orderOut(nil) }
         curtains = []
         isBusy = false

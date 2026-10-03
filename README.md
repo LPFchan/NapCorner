@@ -17,7 +17,8 @@ both ends:
   mouse into it. A little pill springs out of the corner and types
   "Sleeping … zzzZ" as its outline fills. Flicking through the corner doesn't
   count.
-- **After sleep**: for a short while, bumping the mouse won't wake the display.
+- **After sleep**: for the chosen duration, bumping the mouse won't wake the display.
+  Set the slider to **Infinite** to ignore movement until a key press or click.
   A key press or a click always does.
 
 The hold time, push firmness and how long to ignore the mouse are in
