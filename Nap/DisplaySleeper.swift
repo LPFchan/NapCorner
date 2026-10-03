@@ -16,6 +16,7 @@ final class DisplaySleeper {
 
     private var curtains: [CurtainWindow] = []
     private var timer: Timer?
+    private var wakeObserver: NSObjectProtocol?
     private var startedAt = Date()
     /// nil means the guard lasts until a key press or click.
     private var deadline: Date?
@@ -47,14 +48,30 @@ final class DisplaySleeper {
         }
         pending.notify(queue: .main) { [weak self] in
             guard let self, self.isBusy else { return }
-            self.sleepNow()
             // The guard counts from the displays going dark; this is the
             // fallback for when a wiggle cancels the sleep and they never do.
             self.deadline = guardSeconds == Preferences.infiniteGuardSeconds
                 ? nil : Date().addingTimeInterval(self.sleepTransition + guardSeconds)
-            self.timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.watch() }
-            }
+            if self.deadline == nil { self.observeDisplayWake() }
+            self.sleepNow()
+            self.startWatching()
+        }
+    }
+
+    /// Infinite guards wait on workspace notifications while the displays are
+    /// dark, and only poll during a sleep/wake transition.
+    private func observeDisplayWake() {
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.startWatching() }
+        }
+    }
+
+    private func startWatching() {
+        guard isBusy, timer == nil else { return }
+        timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.watch() }
         }
     }
 
@@ -112,6 +129,11 @@ final class DisplaySleeper {
                 return
             }
         }
+        if asleep && deadline == nil {
+            timer?.invalidate()
+            timer = nil
+            return
+        }
         if !asleep && (sleptSinceCall || now.timeIntervalSince(lastSleepCall) > sleepTransition) {
             resleeps += 1
             Log.write("[Sleeper] awake \(String(format: "%.2f", now.timeIntervalSince(startedAt)))s in; back to sleep (\(resleeps))")
@@ -125,6 +147,10 @@ final class DisplaySleeper {
         Log.write("[Sleeper] done, displays \(displaysAsleep ? "asleep" : "awake")")
         timer?.invalidate()
         timer = nil
+        if let wakeObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver)
+            self.wakeObserver = nil
+        }
         curtains.forEach { $0.orderOut(nil) }
         curtains = []
         isBusy = false
