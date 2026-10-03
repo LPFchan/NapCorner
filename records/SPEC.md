@@ -30,9 +30,11 @@ the mouse for a moment afterwards.
   pushed. All motion is hand-stepped springs (`Nap/Spring.swift`).
 - On commit: one trackpad haptic tap, a black curtain closes from the corner,
   then `pmset displaysleepnow`.
-- After sleep: during the guard window, a display woken by the mouse is put
-  straight back to sleep behind the curtain. A key press or click ends the
-  guard and wakes normally, with no animation.
+- After sleep: during the guard window (0–5 s, default 3 s, counted from the
+  displays going dark), a display woken by the mouse is put straight back to
+  sleep behind the curtain, including a wake still showing when the window
+  ends. A key press or click ends the guard and wakes normally, with no
+  animation.
 - Offers to turn off the macOS hot corner on the same corner.
 
 ## Invariants

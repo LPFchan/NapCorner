@@ -12,7 +12,7 @@
 - Move the pointer into a chosen screen corner (top right by default; any of the four, several at once). A small black pill springs out of the corner and types "Sleeping … zzzZ" while its white outline fills.
 - Rest there for the hold time (0.5–5 s, default 1.5 s), or push the mouse further into the corner to fill it faster. Flicking through the corner doesn't count, and leaving the corner cancels.
 - When it fills, the trackpad taps once, the screen goes dark from the corner, and the display sleeps.
-- For a short while after (0–3 s, default 1 s), moving the mouse doesn't wake the display; if it wakes, NapCorner puts it back to sleep. A key press or a click always wakes it.
+- For a short while after (0–5 s, default 3 s), moving the mouse doesn't wake the display; if it wakes, NapCorner puts it back to sleep. A key press or a click always wakes it.
 - If macOS's own hot corner is set to Put Display to Sleep on the same corner, NapCorner offers to turn it off so they don't both fire.
 - The menu bar icon (zzZ) has Enabled, Settings, Open at Login, Check for Updates and About. Updates install through Sparkle.
 
