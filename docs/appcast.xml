@@ -5,6 +5,15 @@
     <link>https://napcorner.lost.plus/appcast.xml</link>
     <language>en</language>
     <item>
+      <title>Version 0.1.3</title>
+      <pubDate>Sun, 04 Oct 2026 03:37:12 GMT</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <sparkle:fullReleaseNotesLink>https://github.com/LPFchan/NapCorner/releases/tag/v0.1.3</sparkle:fullReleaseNotesLink>
+      <enclosure url="https://github.com/LPFchan/NapCorner/releases/download/v0.1.3/NapCorner.dmg" type="application/octet-stream" sparkle:edSignature="BTChTJ94PxTMZ7nG7nC62y39f3ugN1CeZ7EyVvJD3FAsL5lWlilOR4PsLbheWUwmjWLuwlQNcndKzuXRb0zhAw==" length="3841481"/>
+    </item>
+    <item>
       <title>Version 0.1.2</title>
       <pubDate>Sat, 03 Oct 2026 19:17:04 GMT</pubDate>
       <sparkle:version>8</sparkle:version>
